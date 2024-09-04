@@ -18,14 +18,14 @@
 This is where most of the app's behind-the-scenes work happens:
 
 - **FastAPI Services**: The main entry point for handling requests from the app.
-- **ArgoCD**: Helps keep the app updated with the latest code changes.
-- **Machine Learning Pipelines**: Does smart calculations to improve user experience.
-- **Neo4j**: A special database that's good at handling connections between users.
-- **Elasticsearch**: Helps find information quickly.
-- **Logstash**: Collects and organizes app logs.
-- **Kibana**: Shows pretty charts and graphs of app data.
-- **Redis Master**: A fast database for temporary information.
-- **Qdrant**: Another database for specific types of searches.
+- **ArgoCD**: Helps update the app with the latest code changes.
+- **Machine Learning Pipelines**: User recommendations are processed here for shoutouts and chitchats.
+- **Neo4j**: To handle the social level of social connections between users and help in collaborative-based filtering. 
+- **Elasticsearch**: Helps to perform geospatial queries to find nearby shoutouts and chitchats.
+- **Logstash**: Currently not used. We are still experimenting with this.
+- **Kibana**: User Interface for elastic search. Helps us to visually check with data.
+- **Redis Master**: Cache data that is frequently queried. Currently, users, shoutouts and chitchats are cached.
+- **Qdrant**: Database to perform vector searches. Wherein each shoutout and chitchat will be validated by AI which has knowledge awareness about our privacy and terms. This helps us to maintain platform authenticity.
 
 ## Redis Slaves
 
@@ -35,38 +35,21 @@ These help the Redis Master handle lots of requests:
 
 ## External Services
 
-- **Managed Postgres**: A reliable database for storing important app data.
-- **msg91**: Helps send text messages to users.
-- **ola krutirm**: Provides location-based services.
-- **OpenAI API** and **Claude AI API**: Add smart features to the app.
-- **Cloudflare R2**: Stores and serves files like photos and videos.
+- **Managed Postgres**: This is our primary database to store all the data.
+- **msg91**: Helps in phone number OTP-based authentication.
+- **ola krutirm**: Helps us to perform reverse geocoding.
+- **OpenAI API** and **Claude AI API**: APIs to integrate AI in our systems.
+- **Cloudflare R2**: Alternative to s3 which is cheap and reliable for storing objects.
 
 ## CI/CD Pipeline
 
 This is how new code gets from developers to users:
 
-- **Developer**: The person writing new code.
-- **GitHub Actions**: Automatically checks and prepares new code.
-- **DockerHub**: Stores packaged versions of the app.
-- **k8s-configs Repository**: Holds instructions for setting up the app.
+- **GitHub Actions**: Whenever the developer pushes code to fastAPI action is triggered to build, push to dockerhub and make appropriate changes to k8s-config GitHub repo with the latest docker Image.
+- **ArgoCD**: Whenever changes are made to the k8s-config repo, this service automates and makes appropriate changes to the Kubernetes cluster.
+- **DockerHub**: Premium dockerhub subscription where we store all private Docker Images.
+- **k8s-configs Repository**: All the configurations are declared here for our Kubernetes.
 
 ## Background Jobs
 
-- **Background Jobs**: Does important tasks when the app isn't busy.
-
-## Main User Flow
-
-1. User opens the app and sees a map.
-2. App sends a request through the LoadBalancer and Ingress Controller.
-3. FastAPI Services handle the request, using Elasticsearch and Machine Learning Pipelines.
-4. Neo4j database provides user connection info.
-5. App sends back the results to show the user.
-6. If needed, notifications are sent to the user's phone.
-
-## Other Important Connections
-
-- Kibana connects to Elasticsearch to show data visualizations.
-- ArgoCD keeps the Kubernetes Cluster updated.
-- FastAPI Services can store and retrieve files from Cloudflare R2.
-
-This setup helps the Around Me app run smoothly, handle lots of users, and provide a great experience with maps, social connections, and smart features.
+- **Background Jobs**: Background Jobs are maintained to expire shoutouts when they are done with declared time limit.
