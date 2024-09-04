@@ -1,0 +1,110 @@
+title Around Me Social Networking App Architecture
+
+// Client Side
+React Native App [icon: mobile]
+Mapbox SDK [icon: map]
+APN [icon: apple]
+FCM [icon: android]
+
+// Networking
+LoadBalancer [icon: aws-elb]
+cert-manager [icon: lock]
+Ingress Controller [icon: network]
+
+// Kubernetes Cluster
+Kubernetes Cluster [icon: k8s] {
+  FastAPI Services [icon: python] // entry point
+  ArgoCD [icon: git]
+  Machine Learning Pipelines [icon: cpu]
+  Neo4j [icon: neo4j]
+  Elasticsearch [icon: elasticsearch]
+  Logstash [icon: logstash]
+  Kibana [icon: kibana]
+  Redis Master [icon: redis]
+  Qdrant [icon: database]
+}
+
+// Redis Slaves
+Redis Slaves [icon: redis] {
+  Redis Slave 1 [icon: redis]
+  Redis Slave 2 [icon: redis]
+  Redis Slave 3 [icon: redis]
+}
+
+// External Services
+Managed Postgres [icon: postgresql]
+msg91 [icon: message-circle]
+ola krutirm [icon: map-pin]
+OpenAI API [icon: openai]
+Claude AI API [icon: openai]
+Cloudflare R2 [icon: cloud]
+
+// CI/CD Pipeline
+Developer [icon: user]
+GitHub Actions [icon: github]
+DockerHub [icon: docker]
+k8s-configs Repository [icon: git]
+
+// Background Jobs
+Background Jobs [icon: clock]
+
+// Connections
+React Native App <> Mapbox SDK
+APN > React Native App
+FCM > React Native App
+React Native App <> LoadBalancer
+LoadBalancer <> Ingress Controller
+cert-manager > Ingress Controller
+Ingress Controller <> FastAPI Services
+FastAPI Services <> Managed Postgres
+FastAPI Services > msg91
+FastAPI Services > ola krutirm
+FastAPI Services > OpenAI API
+FastAPI Services > Claude AI API
+FastAPI Services <> Redis Master
+FastAPI Services <> Elasticsearch
+FastAPI Services <> Logstash
+FastAPI Services <> Neo4j
+FastAPI Services <> Qdrant
+FastAPI Services <> Machine Learning Pipelines
+FastAPI Services > APN
+FastAPI Services > FCM
+Background Jobs <> FastAPI Services
+Background Jobs <> Managed Postgres
+Background Jobs <> Neo4j
+Background Jobs <> Redis Master
+Developer > GitHub Actions
+GitHub Actions > DockerHub
+DockerHub > k8s-configs Repository
+k8s-configs Repository > ArgoCD
+Redis Master > Redis Slave 1
+Redis Master > Redis Slave 2
+Redis Master > Redis Slave 3
+
+// Main User Flow
+React Native App <> Mapbox SDK
+React Native App <> LoadBalancer
+LoadBalancer <> Ingress Controller
+Ingress Controller <> FastAPI Services
+FastAPI Services <> Elasticsearch
+Elasticsearch <> Machine Learning Pipelines
+Machine Learning Pipelines <> Neo4j
+Machine Learning Pipelines <> FastAPI Services
+FastAPI Services <> React Native App
+APN > React Native App
+FCM > React Native App
+FastAPI Services > APN
+FastAPI Services > FCM
+
+// Kibana connections
+Kibana <> Ingress Controller
+Kibana <> LoadBalancer
+Kibana <> Elasticsearch
+Logstash > Elasticsearch
+
+// ArgoCD connections
+ArgoCD <> Ingress Controller
+ArgoCD <> Kubernetes Cluster
+
+// Cloudflare R2 connections
+FastAPI Services > Cloudflare R2
