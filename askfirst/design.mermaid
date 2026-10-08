@@ -15,6 +15,11 @@ flowchart LR
     WEBAPP["askfirst-web<br/>Next.js 16 · App Router"]
   end
 
+  subgraph INTERNAL["INTERNAL · EC2"]
+    direction TB
+    ORBIT["Orbit<br/>Next.js · admin + analytics"]
+  end
+
   subgraph EDGE["EDGE"]
     direction TB
     LB["Classic LB<br/>ingress-nginx"]
@@ -68,7 +73,6 @@ flowchart LR
     direction TB
     STORE["S3 + CloudFront<br/>signed URLs · R2 legacy"]
     PAY["Cashfree<br/>payments"]
-    PH["PostHog<br/>product analytics"]
   end
 
   RN     --> LB
@@ -106,8 +110,6 @@ flowchart LR
   BE --> STORE
   AI --> STORE
   BE --> PAY
-  RN --> PH
-  WEBAPP --> PH
 
   DEV --> GH
   GH --> GHA
@@ -116,6 +118,8 @@ flowchart LR
   ECR -. "image pull" .-> EKS
   CRON --> BE
   CRON --> AI
+  ORBIT -- "admin APIs" --> BE
+  ORBIT -- "direct reads" --> CH
 
   linkStyle default stroke:#e6e6e6,stroke-width:1.3px
   linkStyle 16,17,18 stroke:#d0604f,stroke-width:2.5px
@@ -126,8 +130,8 @@ flowchart LR
   classDef grp fill:#2a2620,stroke:#d9a04e,stroke-width:1.6px,color:#ececec
   classDef tier fill:#24211c,stroke:#5a5040,stroke-width:1px,color:#a8a8a8
 
-  class DEV,GH,GHA,ECR,RN,WEBAPP,CERT,WEBPOD,BE,AI,RTC,CEL,BUS,CRON,SQS,BR,WH,WA,PUSH,SMS,STORE,PAY,PH svc
+  class DEV,GH,GHA,ECR,RN,WEBAPP,ORBIT,CERT,WEBPOD,BE,AI,RTC,CEL,BUS,CRON,SQS,BR,WH,WA,PUSH,SMS,STORE,PAY svc
   class PG1,PG2,REDIS,CH store
   class LB lb
-  class CICD,CLIENTS,EDGE,EKS,DATA,ASYNC,AIEXT,COMMS,MISC grp
+  class CICD,CLIENTS,INTERNAL,EDGE,EKS,DATA,ASYNC,AIEXT,COMMS,MISC grp
   class APITIER,WORKERS tier
