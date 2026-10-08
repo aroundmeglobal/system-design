@@ -22,6 +22,7 @@ flowchart LR
 
   subgraph EDGE["EDGE"]
     direction TB
+    CF["Cloudflare<br/>DNS · all domains"]
     LB["Classic LB<br/>ingress-nginx"]
     CERT["cert-manager<br/>Let's Encrypt TLS"]
   end
@@ -65,7 +66,9 @@ flowchart LR
   subgraph COMMS["MESSAGING"]
     direction TB
     WA["WhatsApp<br/>Graph API"]
-    PUSH["Push<br/>APNs · FCM · SNS · Expo"]
+    SNS["AWS SNS<br/>push notifications"]
+    PUSH["APNs · FCM<br/>device delivery"]
+    FB["Firebase · GCP<br/>FCM credentials"]
     SMS["SMS and email<br/>MSG91 · Zoho SMTP"]
   end
 
@@ -75,8 +78,8 @@ flowchart LR
     PAY["Cashfree<br/>payments"]
   end
 
-  RN     --> LB
-  WEBAPP --> LB
+  RN     --> CF
+  WEBAPP --> CF
   CERT   -.-> LB
   LB --> WEBPOD
   LB --> BE
@@ -104,8 +107,8 @@ flowchart LR
   BE --> WH
   AI --> WA
   BUS --> WA
-  BE --> PUSH
-  BUS --> PUSH
+  CEL --> SNS
+  BUS --> SNS
   BE --> SMS
   BE --> STORE
   AI --> STORE
@@ -120,6 +123,9 @@ flowchart LR
   CRON --> AI
   ORBIT -- "admin APIs" --> BE
   ORBIT -- "direct reads" --> CH
+  CF --> LB
+  SNS --> PUSH
+  FB -. "FCM creds" .-> SNS
 
   linkStyle default stroke:#e6e6e6,stroke-width:1.3px
   linkStyle 16,17,18 stroke:#d0604f,stroke-width:2.5px
@@ -130,7 +136,7 @@ flowchart LR
   classDef grp fill:#2a2620,stroke:#d9a04e,stroke-width:1.6px,color:#ececec
   classDef tier fill:#24211c,stroke:#5a5040,stroke-width:1px,color:#a8a8a8
 
-  class DEV,GH,GHA,ECR,RN,WEBAPP,ORBIT,CERT,WEBPOD,BE,AI,RTC,CEL,BUS,CRON,SQS,BR,WH,WA,PUSH,SMS,STORE,PAY svc
+  class DEV,GH,GHA,ECR,RN,WEBAPP,ORBIT,CF,CERT,WEBPOD,BE,AI,RTC,CEL,BUS,CRON,SQS,BR,WH,WA,SNS,PUSH,FB,SMS,STORE,PAY svc
   class PG1,PG2,REDIS,CH store
   class LB lb
   class CICD,CLIENTS,INTERNAL,EDGE,EKS,DATA,ASYNC,AIEXT,COMMS,MISC grp
