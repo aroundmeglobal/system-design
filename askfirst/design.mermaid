@@ -1,0 +1,133 @@
+%%{init: {"theme":"base","flowchart":{"curve":"step","nodeSpacing":40,"rankSpacing":70},"themeVariables":{"background":"#181818","primaryColor":"#181818","primaryTextColor":"#ececec","primaryBorderColor":"#e6e6e6","lineColor":"#e6e6e6","fontFamily":"IBM Plex Sans, sans-serif","fontSize":"14px","clusterBkg":"#2a2620","clusterBorder":"#d9a04e","edgeLabelBackground":"#181818","titleColor":"#ececec"}} }%%
+flowchart LR
+
+  subgraph CICD["CI/CD"]
+    direction LR
+    DEV["Developer<br/>push to main / dev"]
+    GH["GitHub<br/>aroundmeglobal"]
+    GHA["GitHub Actions<br/>OIDC → IAM role"]
+    ECR["Amazon ECR<br/>ap-south-2"]
+  end
+
+  subgraph CLIENTS["CLIENTS"]
+    direction TB
+    RN["React Native<br/>Expo 55 · iOS + Android"]
+    WEBAPP["askfirst-web<br/>Next.js 16 · App Router"]
+  end
+
+  subgraph EDGE["EDGE"]
+    direction TB
+    LB["Classic LB<br/>ingress-nginx"]
+    CERT["cert-manager<br/>Let's Encrypt TLS"]
+  end
+
+  subgraph EKS["EKS CLUSTER · ASKFIRST · AP-SOUTH-2"]
+    direction TB
+    subgraph APITIER["API TIER"]
+      direction TB
+      WEBPOD["askfirst-web<br/>SSR pod"]
+      BE["healthcare-backend<br/>FastAPI · HPA 2–5"]
+      AI["healthcare-ai<br/>FastAPI · HPA 2–5"]
+      RTC["rtc<br/>pinned to 1 replica"]
+    end
+    subgraph WORKERS["WORKER TIER"]
+      direction TB
+      CEL["healthcare-celery<br/>worker 1–10 · beat 1"]
+      BUS["bus-consumer<br/>SQS poller · 1–5"]
+      CRON["CronJobs ×3<br/>popularity · trending · classification"]
+    end
+  end
+
+  subgraph DATA["DATA"]
+    direction TB
+    PG1[("healthcare<br/>RDS Postgres · 110 tables")]
+    PG2[("healthcare-ai<br/>RDS Postgres · 84 tables")]
+    REDIS[("ElastiCache Valkey<br/>broker · cache · feed")]
+    CH[("ClickHouse<br/>analytics · error logs")]
+  end
+
+  subgraph ASYNC["ASYNC"]
+    direction TB
+    SQS["SQS<br/>EventBridge · reminders"]
+  end
+
+  subgraph AIEXT["MODELS"]
+    direction TB
+    BR["Azure OpenAI · Bedrock<br/>Nova chat · Titan embed"]
+    WH["OpenAI Whisper<br/>speech to text"]
+  end
+
+  subgraph COMMS["MESSAGING"]
+    direction TB
+    WA["WhatsApp<br/>Graph API"]
+    PUSH["Push<br/>APNs · FCM · SNS · Expo"]
+    SMS["SMS and email<br/>MSG91 · Zoho SMTP"]
+  end
+
+  subgraph MISC["OTHER"]
+    direction TB
+    STORE["S3 + CloudFront<br/>signed URLs · R2 legacy"]
+    PAY["Cashfree<br/>payments"]
+    PH["PostHog<br/>product analytics"]
+  end
+
+  RN     --> LB
+  WEBAPP --> LB
+  CERT   -.-> LB
+  LB --> WEBPOD
+  LB --> BE
+  LB --> AI
+  LB --> RTC
+  WEBPOD --> BE
+  WEBPOD --> AI
+  BE <--> AI
+
+  BE --> REDIS
+  REDIS --> CEL
+  AI --> SQS
+  SQS --> BUS
+
+  BE --> PG1
+  AI --> PG2
+  CEL --> PG1
+  CEL --> PG2
+  BUS --> PG2
+
+  BE --> CH
+  AI --> CH
+  BE --> BR
+  AI --> BR
+  BE --> WH
+  AI --> WA
+  BUS --> WA
+  BE --> PUSH
+  BUS --> PUSH
+  BE --> SMS
+  BE --> STORE
+  AI --> STORE
+  BE --> PAY
+  RN --> PH
+  WEBAPP --> PH
+
+  DEV --> GH
+  GH --> GHA
+  GHA -- "push · commit-SHA tag" --> ECR
+  GHA -- "kubectl apply" --> EKS
+  ECR -. "image pull" .-> EKS
+  CRON --> BE
+  CRON --> AI
+
+  linkStyle default stroke:#e6e6e6,stroke-width:1.3px
+  linkStyle 16,17,18 stroke:#d0604f,stroke-width:2.5px
+
+  classDef svc fill:#1f1f1f,stroke:#e6e6e6,stroke-width:1px,color:#ececec
+  classDef store fill:#1f1f1f,stroke:#e6e6e6,stroke-width:1.2px,color:#ececec
+  classDef lb fill:#7b4fd6,stroke:#7b4fd6,color:#ffffff
+  classDef grp fill:#2a2620,stroke:#d9a04e,stroke-width:1.6px,color:#ececec
+  classDef tier fill:#24211c,stroke:#5a5040,stroke-width:1px,color:#a8a8a8
+
+  class DEV,GH,GHA,ECR,RN,WEBAPP,CERT,WEBPOD,BE,AI,RTC,CEL,BUS,CRON,SQS,BR,WH,WA,PUSH,SMS,STORE,PAY,PH svc
+  class PG1,PG2,REDIS,CH store
+  class LB lb
+  class CICD,CLIENTS,EDGE,EKS,DATA,ASYNC,AIEXT,COMMS,MISC grp
+  class APITIER,WORKERS tier
